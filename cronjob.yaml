@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: alpine-cronjob
+spec:
+  schedule: "*/1 * * * *"  # Runs every minute
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: alpine
+            image: alpine:latest
+            command: ["/bin/sh", "-c", "echo 'Hello from Alpine! The time is: $(date)'"]
+          restartPolicy: OnFailure
