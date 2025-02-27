@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: alpine-cronjob
 spec:
-  schedule: "*/1 * * * *"  # Runs every minute
+  schedule: "*/1 * 1 * *"  # Runs every minute
   jobTemplate:
     spec:
       template:
