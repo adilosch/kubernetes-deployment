@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: nginx
+    xyz: "hello"
   name: nginx
   namespace: nginx
 spec:
