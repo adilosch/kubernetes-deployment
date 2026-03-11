@@ -5,7 +5,6 @@ metadata:
     app: nginx
     xyz: "hello"
   name: nginx
-  namespace: nginx
 spec:
   replicas: 1
   selector:
