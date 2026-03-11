@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: LimitRange
 metadata:
-  name: ephemeral-storage-1gi
+  name: ephemeral-storage-limits
 spec:
   limits:
     - type: Container
-      max:
-        ephemeral-storage: "1Gi"
-      min:
-        ephemeral-storage: "256Mi"
+      defaultRequest:
+        ephemeral-storage: "64Mi"
       default:
         ephemeral-storage: "256Mi"
-      defaultRequest:
-        ephemeral-storage: "128Mi"
+      min:
+        ephemeral-storage: "32Mi"
+      max:
+        ephemeral-storage: "2Gi"
