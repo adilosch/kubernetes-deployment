@@ -5,4 +5,5 @@ metadata:
     kubernetes.io/metadata.name: argocd
     namchname: Polat
     name: Orhan
+    plz: '21109'
   name: ns1
