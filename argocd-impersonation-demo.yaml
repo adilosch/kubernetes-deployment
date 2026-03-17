@@ -88,12 +88,12 @@ spec:
     - server: https://kubernetes.default.svc
       namespace: guestbook-impersonation
       defaultServiceAccount: guestbook-deployer
-  clusterResourceWhitelist: []
-  namespaceResourceWhitelist:
+  clusterResourceWhitelist:
     - group: ""
-      kind: Service
-    - group: apps
-      kind: Deployment
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -113,5 +113,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
+#    syncOptions:
+#      - CreateNamespace=true

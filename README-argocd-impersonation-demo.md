@@ -64,6 +64,16 @@ Das ist der eigentliche Sicherheitsgewinn:
 
 Argo CD deployed im Ziel-Namespace nicht mit globalen Controller-Rechten, sondern nur mit dem, was `guestbook-deployer` dort darf.
 
+Im `AppProject` ist die `namespaceResourceWhitelist` bewusst auf alle Namespaced-Ressourcen gesetzt:
+
+```yaml
+namespaceResourceWhitelist:
+  - group: "*"
+    kind: "*"
+```
+
+Damit blockiert das Projekt keine Namespaced-Ressourcen zusaetzlich, auch generierte Child-Resources wie `ReplicaSet` und `Pod` nicht. Ausschlaggebend bleibt damit das Kubernetes-RBAC des impersonierten `ServiceAccount`.
+
 ### 5. Das AppProject verbindet Ziel und ServiceAccount
 
 Im `AppProject` steht:
