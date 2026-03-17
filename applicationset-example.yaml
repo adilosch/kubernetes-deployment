@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: beispiel-applicationset
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - appName: beispiel-guestbook
+            namespace: guestbook
+            repoURL: https://github.com/argoproj/argocd-example-apps.git
+            revision: HEAD
+            path: guestbook
+          - appName: beispiel-helm-guestbook
+            namespace: helm-guestbook
+            repoURL: https://github.com/argoproj/argocd-example-apps.git
+            revision: HEAD
+            path: helm-guestbook
+  template:
+    metadata:
+      name: '{{appName}}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{repoURL}}'
+        targetRevision: '{{revision}}'
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

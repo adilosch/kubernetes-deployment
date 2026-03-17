@@ -1,0 +1,117 @@
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+#  name: argocd-cm
+#  namespace: argocd
+#data:
+#  application.sync.impersonation.enabled: "true"
+#---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argocd-application-controller-impersonation
+rules:
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["impersonate"]
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["selfsubjectaccessreviews"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argocd-application-controller-impersonation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argocd-application-controller-impersonation
+subjects:
+  - kind: ServiceAccount
+    name: argocd-application-controller
+    namespace: argocd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: guestbook-impersonation
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: guestbook-deployer
+  namespace: guestbook-impersonation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: guestbook-deployer-role
+  namespace: guestbook-impersonation
+rules:
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: guestbook-deployer-rolebinding
+  namespace: guestbook-impersonation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: guestbook-deployer-role
+subjects:
+  - kind: ServiceAccount
+    name: guestbook-deployer
+    namespace: guestbook-impersonation
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: impersonation-demo
+  namespace: argocd
+spec:
+  description: Demo project for Argo CD sync impersonation
+  sourceRepos:
+    - https://github.com/argoproj/argocd-example-apps.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: guestbook-impersonation
+  destinationServiceAccounts:
+    - server: https://kubernetes.default.svc
+      namespace: guestbook-impersonation
+      defaultServiceAccount: guestbook-deployer
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: Service
+    - group: apps
+      kind: Deployment
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook-impersonation-demo
+  namespace: argocd
+spec:
+  project: impersonation-demo
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: guestbook-impersonation
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
